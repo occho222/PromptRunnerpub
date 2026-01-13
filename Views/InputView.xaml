@@ -1,0 +1,184 @@
+<UserControl x:Class="PromptRunner.Views.InputView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:PromptRunner.Views"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="1000">
+    <Grid Background="#ECF0F1">
+        <Grid Margin="40">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="320"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Sidebar: Favorites -->
+            <Border Grid.Column="0" Background="White" BorderBrush="#F39C12"
+                   BorderThickness="2" CornerRadius="5" Padding="15" Margin="0,0,20,0"
+                   Visibility="{Binding FavoriteItems.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="★ お気に入り" FontSize="18" FontWeight="Bold"
+                                  Foreground="#F39C12" Margin="0,0,0,10"/>
+                        <TextBlock Text="項目を選択すると、入力テキストに対してその項目だけを実行します"
+                                  FontSize="11" Foreground="#7F8C8D" Margin="0,0,0,15" TextWrapping="Wrap"/>
+
+                        <!-- Category Groups -->
+                        <ItemsControl ItemsSource="{Binding FavoriteCategoryGroups}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,0,20">
+                                        <!-- Category Header -->
+                                        <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold"
+                                                  Foreground="#E67E22" Margin="0,0,0,8"/>
+
+                                        <!-- Category Items -->
+                                        <ItemsControl ItemsSource="{Binding Items}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Button Content="{Binding Title}"
+                                                           Command="{Binding DataContext.ExecuteFavoriteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                           CommandParameter="{Binding}"
+                                                           Padding="10,6" Margin="0,0,0,6" FontSize="11"
+                                                           Background="#F39C12" Foreground="White"
+                                                           BorderThickness="0" Cursor="Hand"
+                                                           HorizontalAlignment="Stretch"/>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Right Content Area -->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Title -->
+                <TextBlock Grid.Row="0" Text="入力" FontSize="28" FontWeight="Bold"
+                          Foreground="#2C3E50" Margin="0,0,0,10"/>
+
+                <!-- Input Area -->
+                <Border Grid.Row="1" Background="White" BorderBrush="#BDC3C7"
+                       BorderThickness="1" CornerRadius="5" Padding="15">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="文章・メモ・議事録・URL等を入力してください"
+                                  FontSize="14" Foreground="#7F8C8D" Margin="0,0,0,10"/>
+
+                        <TextBox Grid.Row="1" Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
+                                TextWrapping="Wrap" AcceptsReturn="True"
+                                VerticalScrollBarVisibility="Auto"
+                                FontSize="14" Padding="5"/>
+                    </Grid>
+                </Border>
+
+                <!-- Options -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,0">
+                    <CheckBox Content="事実抽出を有効にする（精度向上）"
+                             IsChecked="{Binding EnableFactExtraction}"
+                             FontSize="14" VerticalAlignment="Center">
+                        <CheckBox.ToolTip>
+                            <ToolTip>
+                                <StackPanel MaxWidth="400">
+                                    <TextBlock Text="事実抽出機能について" FontWeight="Bold" Margin="0,0,0,5"/>
+                                    <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                                        入力テキストから重要な事実・情報を事前に抽出し、各チェックリスト項目の実行時にAIへ提供します。
+                                    </TextBlock>
+                                    <TextBlock Text="抽出される情報:" FontWeight="SemiBold" Margin="0,0,0,3"/>
+                                    <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                                        ・主要なトピックやテーマ
+                                        <LineBreak/>・登場する人物、組織、製品名
+                                        <LineBreak/>・日時、数値、統計情報
+                                        <LineBreak/>・問題点や課題
+                                        <LineBreak/>・提案やアイデア
+                                        <LineBreak/>・その他重要な情報
+                                    </TextBlock>
+                                    <TextBlock TextWrapping="Wrap" Foreground="#27AE60" FontWeight="SemiBold">
+                                        効果: AIが入力内容をより正確に理解し、高精度な結果を生成できます。
+                                    </TextBlock>
+                                </StackPanel>
+                            </ToolTip>
+                        </CheckBox.ToolTip>
+                    </CheckBox>
+                    <TextBlock Text="（処理時間が少し長くなります）"
+                              FontSize="12" Foreground="#7F8C8D"
+                              VerticalAlignment="Center" Margin="10,0,0,0"/>
+                </StackPanel>
+
+                <!-- Buttons -->
+                <Grid Grid.Row="3" Margin="0,20,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="1" Content="ファイルから読み込み"
+                           Command="{Binding LoadFromFileCommand}"
+                           Padding="20,12" Margin="5" FontSize="14"
+                           Background="#95A5A6" Foreground="White"
+                           BorderThickness="0" Cursor="Hand"/>
+
+                    <Button Grid.Column="2" Content="クリア"
+                           Command="{Binding ClearCommand}"
+                           Padding="20,12" Margin="5" FontSize="14"
+                           Background="#E74C3C" Foreground="White"
+                           BorderThickness="0" Cursor="Hand"/>
+
+                    <Button Grid.Column="3" Content="次へ（手動選択）"
+                           Command="{Binding NextWithoutAnalysisCommand}"
+                           Padding="20,12" Margin="5" FontSize="14"
+                           Background="#16A085" Foreground="White"
+                           BorderThickness="0" Cursor="Hand"
+                           ToolTip="AI分析なしでチェックリスト画面へ移動"/>
+
+                    <Button Grid.Column="4" Content="次へ（AIに分析させる）"
+                           Command="{Binding AnalyzeCommand}"
+                           Padding="20,12" Margin="5" FontSize="14"
+                           Background="#3498DB" Foreground="White"
+                           BorderThickness="0" Cursor="Hand"
+                           IsEnabled="{Binding IsExtractingFacts, Converter={StaticResource InverseBooleanConverter}}">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="#3498DB"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#2980B9"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+
+                <!-- Loading Indicator -->
+                <Border Grid.Row="0" Grid.RowSpan="4"
+                       Background="#80000000"
+                       Visibility="{Binding IsExtractingFacts, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <ProgressBar IsIndeterminate="True" Width="200" Height="20" Margin="0,0,0,20"/>
+                        <TextBlock Text="事実を抽出中..." FontSize="16" Foreground="White"
+                                  HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

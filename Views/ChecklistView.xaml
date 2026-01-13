@@ -1,0 +1,383 @@
+<UserControl x:Class="PromptRunner.Views.ChecklistView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:PromptRunner.Views"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="1000">
+    <Grid Background="#ECF0F1">
+        <Grid Margin="40">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Title -->
+            <TextBlock Grid.Row="0" Text="チェックリスト" FontSize="28" FontWeight="Bold"
+                      Foreground="#2C3E50" Margin="0,0,0,10"/>
+
+            <!-- Status and Controls -->
+            <Grid Grid.Row="1" Margin="0,0,0,20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="{Binding StatusMessage}"
+                          FontSize="14" Foreground="#7F8C8D" Margin="0,0,0,10"/>
+
+                <!-- Search Box -->
+                <Border Grid.Row="1" Background="White" BorderBrush="#BDC3C7"
+                       BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" Text="🔍" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                FontSize="13" BorderThickness="0" VerticalAlignment="Center"
+                                Background="Transparent">
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Style.Triggers>
+                                        <Trigger Property="Text" Value="">
+                                            <Setter Property="Tag" Value="タイトル、説明、プロンプト内容で検索..."/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+                    </Grid>
+                </Border>
+
+                <WrapPanel Grid.Row="2" Orientation="Horizontal">
+                    <Button Content="推奨項目を選択"
+                           Command="{Binding SelectRecommendedCommand}"
+                           Padding="12,8" Margin="0,0,5,0" FontSize="12"
+                           Background="#3498DB" Foreground="White"
+                           BorderThickness="0" Cursor="Hand"/>
+
+                    <Button Content="すべて選択"
+                           Command="{Binding SelectAllCommand}"
+                           Padding="12,8" Margin="0,0,5,0" FontSize="12"
+                           Background="#16A085" Foreground="White"
+                           BorderThickness="0" Cursor="Hand"/>
+
+                    <Button Content="すべて解除"
+                           Command="{Binding DeselectAllCommand}"
+                           Padding="12,8" Margin="0,0,5,0" FontSize="12"
+                           Background="#E67E22" Foreground="White"
+                           BorderThickness="0" Cursor="Hand"/>
+
+                    <Button Content="すべて展開"
+                           Command="{Binding ExpandAllCommand}"
+                           Padding="12,8" Margin="0,0,5,0" FontSize="12"
+                           Background="#95A5A6" Foreground="White"
+                           BorderThickness="0" Cursor="Hand"/>
+
+                    <Button Content="すべて折りたたむ"
+                           Command="{Binding CollapseAllCommand}"
+                           Padding="12,8" Margin="0,0,5,0" FontSize="12"
+                           Background="#7F8C8D" Foreground="White"
+                           BorderThickness="0" Cursor="Hand"/>
+                </WrapPanel>
+            </Grid>
+
+            <!-- Checklist Items (Category Groups) and Selected Items -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="300"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Checklist Items -->
+                <Border Grid.Column="0" Background="White" BorderBrush="#BDC3C7"
+                       BorderThickness="1" CornerRadius="5" Margin="0,0,10,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding CategoryGroups}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Expander IsExpanded="{Binding IsExpanded}" Margin="10,5">
+                                    <Expander.Header>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0" FontSize="16" FontWeight="Bold" Foreground="#2C3E50">
+                                                <Run Text="{Binding Name, Mode=OneWay}"/>
+                                            </TextBlock>
+
+                                            <Border Grid.Column="1" Background="#3498DB" CornerRadius="3" Padding="8,4" Margin="10,0,0,0">
+                                                <TextBlock FontSize="12" Foreground="White">
+                                                    <Run Text="{Binding EnabledCount, Mode=OneWay}"/>
+                                                    <Run Text="/"/>
+                                                    <Run Text="{Binding Items.Count, Mode=OneWay}"/>
+                                                    <Run Text=" 選択"/>
+                                                </TextBlock>
+                                            </Border>
+                                        </Grid>
+                                    </Expander.Header>
+
+                                    <ItemsControl ItemsSource="{Binding Items}" Margin="20,10,0,10">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border BorderBrush="#ECF0F1" BorderThickness="0,0,0,1" Padding="10,8">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Background" Value="Transparent"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsEnabled}" Value="True">
+                                                                    <Setter Property="Background" Value="#E8F8F5"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <!-- Checkbox -->
+                                                        <CheckBox Grid.Column="0" IsChecked="{Binding IsEnabled}"
+                                                                 VerticalAlignment="Top" Margin="0,3,15,0">
+                                                            <CheckBox.Style>
+                                                                <Style TargetType="CheckBox">
+                                                                    <Style.Triggers>
+                                                                        <Trigger Property="IsChecked" Value="True">
+                                                                            <Setter Property="FontWeight" Value="Bold"/>
+                                                                        </Trigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </CheckBox.Style>
+                                                        </CheckBox>
+
+                                                        <!-- Content -->
+                                                        <StackPanel Grid.Column="1">
+                                                            <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold"
+                                                                      Foreground="#2C3E50" TextWrapping="Wrap"/>
+
+                                                            <TextBlock Text="{Binding Description}" FontSize="12"
+                                                                      Foreground="#7F8C8D" TextWrapping="Wrap" Margin="0,3,0,0"/>
+
+                                                            <!-- AI推奨バッジ -->
+                                                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0"
+                                                                       Visibility="{Binding Reason, Converter={StaticResource StringToVisibilityConverter}}">
+                                                                <Border Background="#27AE60" CornerRadius="3" Padding="6,3" Margin="0,0,5,0">
+                                                                    <TextBlock Text="AI推奨" FontSize="10" Foreground="White" FontWeight="Bold"/>
+                                                                </Border>
+
+                                                                <Border Background="#E74C3C" CornerRadius="3" Padding="6,3" Margin="0,0,5,0">
+                                                                    <TextBlock FontSize="10" Foreground="White">
+                                                                        <Run Text="信頼度: "/>
+                                                                        <Run Text="{Binding Confidence, StringFormat={}{0:P0}}"/>
+                                                                    </TextBlock>
+                                                                </Border>
+                                                            </StackPanel>
+
+                                                            <TextBlock Text="{Binding Reason, StringFormat='推奨理由: {0}'}"
+                                                                      FontSize="11" Foreground="#27AE60" FontStyle="Italic"
+                                                                      TextWrapping="Wrap" Margin="0,3,0,0"
+                                                                      Visibility="{Binding Reason, Converter={StaticResource StringToVisibilityConverter}}"/>
+
+                                                            <TextBox Text="{Binding UserNote, UpdateSourceTrigger=PropertyChanged}"
+                                                                    TextWrapping="Wrap" Margin="0,5,0,0"
+                                                                    BorderBrush="#BDC3C7" BorderThickness="1" Padding="5"
+                                                                    FontSize="11">
+                                                                <TextBox.Style>
+                                                                    <Style TargetType="TextBox">
+                                                                        <Setter Property="Background" Value="#FAFAFA"/>
+                                                                        <Style.Triggers>
+                                                                            <Trigger Property="IsFocused" Value="True">
+                                                                                <Setter Property="Background" Value="White"/>
+                                                                            </Trigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBox.Style>
+                                                            </TextBox>
+                                                            <TextBlock Text="補足条件を入力（オプション）"
+                                                                      FontSize="10" Foreground="#BDC3C7" Margin="0,2,0,0"/>
+
+                                                            <!-- プロンプト表示とお気に入り -->
+                                                            <WrapPanel Margin="0,5,0,0">
+                                                                <Button Content="プロンプトを表示/非表示"
+                                                                       Command="{Binding DataContext.TogglePromptCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                       CommandParameter="{Binding}"
+                                                                       Padding="8,4" Margin="0,0,5,0" FontSize="10"
+                                                                       Background="#9B59B6" Foreground="White"
+                                                                       BorderThickness="0" Cursor="Hand"/>
+
+                                                                <Button Command="{Binding DataContext.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                       CommandParameter="{Binding}"
+                                                                       Padding="8,4" FontSize="10"
+                                                                       BorderThickness="0" Cursor="Hand">
+                                                                    <Button.Style>
+                                                                        <Style TargetType="Button">
+                                                                            <Setter Property="Content" Value="☆ お気に入り"/>
+                                                                            <Setter Property="Background" Value="#95A5A6"/>
+                                                                            <Setter Property="Foreground" Value="White"/>
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                                                                                    <Setter Property="Content" Value="★ お気に入り"/>
+                                                                                    <Setter Property="Background" Value="#F39C12"/>
+                                                                                    <Setter Property="Foreground" Value="White"/>
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </Button.Style>
+                                                                </Button>
+                                                            </WrapPanel>
+
+                                                            <Border Background="#F8F9FA" BorderBrush="#DEE2E6"
+                                                                   BorderThickness="1" CornerRadius="3" Padding="10"
+                                                                   Margin="0,5,0,0"
+                                                                   Visibility="{Binding ShowPrompt, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="プロンプトテンプレート："
+                                                                              FontSize="10" FontWeight="Bold" Foreground="#6C757D" Margin="0,0,0,5"/>
+                                                                    <TextBox Text="{Binding PromptTemplate, Mode=OneWay}"
+                                                                            TextWrapping="Wrap" IsReadOnly="True"
+                                                                            FontSize="10" FontFamily="Consolas"
+                                                                            Background="#FFFFFF" BorderBrush="#CED4DA"
+                                                                            BorderThickness="1" Padding="5"
+                                                                            VerticalScrollBarVisibility="Auto"
+                                                                            MaxHeight="120"/>
+                                                                    <TextBlock Text="※ {InputText}, {UserNote}, {Facts} は実行時に置換されます"
+                                                                              FontSize="9" Foreground="#6C757D" FontStyle="Italic" Margin="0,5,0,0"/>
+
+                                                                    <Separator Margin="0,10"/>
+
+                                                                    <TextBlock Text="実際に送信されるプロンプト（プレビュー）："
+                                                                              FontSize="10" FontWeight="Bold" Foreground="#6C757D" Margin="0,0,0,5"/>
+                                                                    <ScrollViewer MaxHeight="200" VerticalScrollBarVisibility="Auto">
+                                                                        <TextBox IsReadOnly="True" TextWrapping="Wrap"
+                                                                                FontSize="10" FontFamily="Consolas"
+                                                                                Foreground="#212529" Padding="5"
+                                                                                Background="#E9ECEF" BorderBrush="#CED4DA"
+                                                                                BorderThickness="1">
+                                                                            <TextBox.Text>
+                                                                                <MultiBinding Converter="{StaticResource PromptPreviewConverter}">
+                                                                                    <Binding Path="DataContext" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                                                                    <Binding Path="."/>
+                                                                                </MultiBinding>
+                                                                            </TextBox.Text>
+                                                                        </TextBox>
+                                                                    </ScrollViewer>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Expander>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Selected Items List -->
+            <Border Grid.Column="1" Background="White" BorderBrush="#BDC3C7"
+                   BorderThickness="1" CornerRadius="5">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <Border Grid.Row="0" Background="#27AE60" Padding="15,10">
+                        <StackPanel>
+                            <TextBlock FontSize="14" FontWeight="Bold" Foreground="White">
+                                <Run Text="✓ 選択済み"/>
+                            </TextBlock>
+                            <TextBlock FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,5,0,0">
+                                <Run Text="{Binding SelectedItemsForDisplay.Count, Mode=OneWay}"/>
+                                <Run Text=" 項目"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Selected Items -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding SelectedItemsForDisplay}" Margin="10">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#E8F8F5" BorderBrush="#27AE60"
+                                           BorderThickness="1" CornerRadius="3" Padding="10" Margin="0,0,0,8">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock Grid.Row="0" Text="{Binding Title}"
+                                                      FontSize="13" FontWeight="SemiBold"
+                                                      Foreground="#2C3E50" TextWrapping="Wrap"/>
+
+                                            <TextBlock Grid.Row="1" FontSize="10"
+                                                      Foreground="#7F8C8D" Margin="0,3,0,0">
+                                                <Run Text="{Binding Category}"/>
+                                            </TextBlock>
+
+                                            <!-- AI推奨バッジ -->
+                                            <Border Grid.Row="2" Background="#27AE60" CornerRadius="3"
+                                                   Padding="4,2" Margin="0,5,0,0" HorizontalAlignment="Left"
+                                                   Visibility="{Binding Reason, Converter={StaticResource StringToVisibilityConverter}}">
+                                                <TextBlock Text="AI推奨" FontSize="9" Foreground="White" FontWeight="Bold"/>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+
+            <!-- Buttons -->
+            <Grid Grid.Row="3" Margin="0,20,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="1" Content="← 戻る"
+                       Command="{Binding BackCommand}"
+                       Padding="20,12" Margin="5" FontSize="14"
+                       Background="#95A5A6" Foreground="White"
+                       BorderThickness="0" Cursor="Hand"/>
+
+                <Button Grid.Column="2" Content="実行 →"
+                       Command="{Binding ExecuteCommand}"
+                       Padding="20,12" Margin="5" FontSize="14"
+                       Background="#27AE60" Foreground="White"
+                       BorderThickness="0" Cursor="Hand"/>
+            </Grid>
+
+            <!-- Loading Indicator -->
+            <Border Grid.Row="0" Grid.RowSpan="4"
+                   Background="#80000000"
+                   Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <ProgressBar IsIndeterminate="True" Width="200" Height="20" Margin="0,0,0,20"/>
+                    <TextBlock Text="AIがチェックリストを作成中..."
+                              FontSize="16" Foreground="White" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
